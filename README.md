@@ -19,28 +19,57 @@ The original MATLAB version(https://github.com/wangyu9/qhm) depends on gptoolbox
 functions are vendored here, and the SuiteSparse solver is replaced by cuDSS wrapped in tdss.py
 (the pipeline runs in float64 on CUDA).
 
-# main.py
+# Requirements
+
+An **NVIDIA GPU with CUDA** is required: the sparse linear solves go through
+cuDSS (via `nvmath-python`), which has no CPU backend. The pipeline runs in
+float64 on the GPU.
+
+Python dependencies:
+
+```bash
+pip install torch numpy scipy libigl nvmath-python[cu12]
+```
+
+- **torch** — core tensor/linear-algebra engine (install the build matching
+  your CUDA version; see https://pytorch.org).
+- **numpy**, **scipy** — mesh setup and sparse-matrix assembly.
+- **libigl** — geometry operators and the OBJ reader. Both the older
+  (`igl.read_obj`) and newer (`igl.readOBJ`) bindings work; the shim in
+  `gptoolbox/igl_compat.py` resolves the name automatically.
+- **nvmath-python** — provides the cuDSS `DirectSolver` used by `tdss.py`.
+  Install the extra matching your CUDA toolkit (`[cu12]` for CUDA 12,
+  `[cu13]` for CUDA 13); the extra pulls in `nvidia-cudss` and `cuda-core`,
+  both of which `tdss.py` needs. (This repo was developed against CUDA 13 /
+  `nvmath-python[cu13]`.)
+
+Optional (only for the standalone visualization/analysis scripts, not for
+`main.py`/`demo.py`): **matplotlib**, **pandas**, **pillow**.
+
+# Usage
 
 Command-line front end for the variational Beltrami solver
 (`core_variational_beltrami`). Same job as `demo.py`, but the fields of the
 `args` struct are exposed as command-line flags. Running with no arguments
 reproduces `demo.main('david_o_A')`.
 
-## Usage
+## main.py
 
 ```bash
 python main.py [mesh] [options]
 ```
 
 `mesh` names a folder under `test_cases/` containing an `input.obj`. A handful
-of names (`WeberZorin14_fig19`, `cross`, `Lshape`, ...) resolve to
+of names (`WeberZorin14_fig19`, `cross`, `Lshape`, `square_rot180`, ...) resolve to
 `test_cases/Simple/<mesh>`; everything else (`david_o_A`, `bunny_i_H`,
-`lucy_o_G`, ...) resolves to `test_cases/Letters/<mesh>`. Use `--folder PATH`
-to point at a mesh folder directly.
+`lucy_o_G`, ...) resolves to `test_cases/Letters/<mesh>`. The test meshes are
+drawn from the [Locally Injective Mappings
+Benchmark](https://github.com/duxingyi-charles/Locally-Injective-Mappings-Benchmark).
+Use `--folder PATH` to point at a mesh folder directly.
 
 ```bash
 python main.py                    # default mesh, david_o_A
-python main.py WeberZorin14_fig19 # smallest mesh, ~1s smoke test
+python main.py square_rot180 # smallest mesh, ~1s smoke test
 ```
 
 ## Common flags

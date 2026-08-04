@@ -5,11 +5,12 @@ the texture indices; VT (the target boundary) comes from the vt lines.
 """
 
 import numpy as np
-import igl
+
+from igl_compat import igl_fn
 
 
 def readOBJ(filename):
-    V, UV, N, F, TF, NF = igl.read_obj(str(filename))
+    V, UV, N, F, TF, NF = igl_fn('read_obj')(str(filename))
     V = np.asarray(V, dtype=np.float64)
     F = np.asarray(F, dtype=np.int64)
     UV = np.asarray(UV, dtype=np.float64)
